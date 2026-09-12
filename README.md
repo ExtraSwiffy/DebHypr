@@ -7,7 +7,7 @@ It installs only the applications I use:
 - Firefox
 - Ghostty
 
-It also installs and restores configuration for Hyprland, Fastfetch, and Starship, plus my Hyprland console-mode and reboot helper scripts. Hyprland is intentionally **not** installed because this repository is meant for a new Debian system where Hyprland is already installed.
+It also installs Firefox, Ghostty, Fastfetch, Starship, and Hyprpaper; restores their configuration; and includes my Hyprland console-mode and reboot helper scripts. Hyprland is intentionally **not** installed because this repository is meant for a new Debian system where Hyprland is already installed.
 
 ## Install
 
@@ -25,6 +25,7 @@ The installer needs `sudo` only to install packages. Before replacing a config, 
 | Repository file | Installed location |
 | --- | --- |
 | `config/hypr/hyprland.conf` | `~/.config/hypr/hyprland.conf` |
+| `config/hypr/hyprpaper.conf` | `~/.config/hypr/hyprpaper.conf` |
 | `config/ghostty/config.ghostty` | `~/.config/ghostty/config.ghostty` |
 | `config/fastfetch/config.jsonc` | `~/.config/fastfetch/config.jsonc` |
 | `config/starship.toml` | `~/.config/starship.toml` |
@@ -32,6 +33,9 @@ The installer needs `sudo` only to install packages. Before replacing a config, 
 | `scripts/local/bin/desktop-to-console` | `~/.local/bin/desktop-to-console` |
 | `scripts/local/bin/console-mode-session` | `~/.local/bin/console-mode-session` |
 | `scripts/sbin/reboot-to-windows` | `/usr/local/sbin/reboot-to-windows` |
+| `assets/wallpapers/after-sunset-minimal-4k-zm-3840x2160.jpg` | `~/.local/share/backgrounds/DebHypr/after-sunset-minimal-4k-zm-3840x2160.jpg` |
+
+Hyprpaper is started by the `exec-once = hyprpaper` line in the supplied Hyprland config. The supplied Hyprpaper config preserves the current monitor name, `HDMI-A-1`; change it if your new system uses a different monitor name (run `hyprctl monitors` to check).
 
 ## Shell setup
 

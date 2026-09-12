@@ -5,7 +5,7 @@ set -Eeuo pipefail
 repo_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 config_dir="${XDG_CONFIG_HOME:-$HOME/.config}"
 backup_dir="$HOME/.config-backup-debhypr-$(date +%Y%m%d-%H%M%S)"
-packages=(firefox ghostty fastfetch starship)
+packages=(firefox ghostty fastfetch starship hyprpaper)
 
 if [[ "$(id -u)" -eq 0 ]]; then
   echo "Run this script as your normal user, not as root." >&2
@@ -41,6 +41,10 @@ if [[ -e "$starship_target" || -L "$starship_target" ]]; then
 fi
 cp "$repo_dir/config/starship.toml" "$starship_target"
 
+wallpaper_dir="${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/DebHypr"
+mkdir -p "$wallpaper_dir"
+cp "$repo_dir/assets/wallpapers/after-sunset-minimal-4k-zm-3840x2160.jpg" "$wallpaper_dir/"
+
 local_bin="$HOME/.local/bin"
 mkdir -p "$local_bin"
 for script in start-console-after-hyprland desktop-to-console console-mode-session; do
@@ -59,6 +63,7 @@ sudo install -m 0755 "$repo_dir/scripts/sbin/reboot-to-windows" "$system_script"
 
 echo
 printf '%s\n' "DebHypr is installed. Existing configs, if any, are in: $backup_dir"
+printf '%s\n' "Installed the wallpaper to: $wallpaper_dir"
 printf '%s\n' "Installed console-mode scripts to: $local_bin"
 printf '%s\n' "The reboot-to-Windows helper was installed to: $system_script"
 printf '%s\n' "To enable Starship in Bash, add this to ~/.bashrc if it is not already there:"
