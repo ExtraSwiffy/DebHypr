@@ -12,7 +12,7 @@ It also installs Firefox, Ghostty, Fastfetch, Starship, and Hyprpaper; restores 
 ## Install
 
 ```bash
-git clone https://github.com/YOUR-GITHUB-USERNAME/DebHypr.git
+git clone https://github.com/ExtraSwiffy/DebHypr.git
 cd DebHypr
 chmod +x install.sh
 ./install.sh
