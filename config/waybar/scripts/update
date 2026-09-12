@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+print_help() {
+    echo "$0: $0 [option]"
+    echo "    Update Debian packages"
+    echo
+    echo "Options:"
+    echo "    data      Print data in JSON format"
+}
+
+detect_updates() {
+    local updates
+    updates=$(apt list --upgradable 2>/dev/null | tail -n +2 | grep -c .)
+    printf "%d" "$updates"
+}
+
+main() {
+    case "$1" in
+        "")
+            trap "pkill -RTMIN+1 waybar" EXIT
+            printf "\033[34mUpdating packages...\033[0m\n"
+            sudo apt update && sudo apt upgrade
+            notify-send "Update Complete" --icon "package-install"
+            printf "\033[32m\nUpdate complete!\033[0m\n"
+            read -rn 1 -p "Press any key to exit..."
+            ;;
+        data)
+            local updates icon tooltip
+            updates=$(detect_updates)
+            if (( updates > 0 )); then
+                icon="󰄠"
+                tooltip="Updates: $updates"
+            else
+                icon="󰸟"
+                tooltip="No updates available"
+            fi
+            printf "{ \"text\": \"%s\", \"tooltip\": \"%s\" }\n" "$icon" "$tooltip"
+            ;;
+        *)
+            print_help >&2
+            return 1
+            ;;
+    esac
+}
+
+main "$@"

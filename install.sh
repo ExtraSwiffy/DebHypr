@@ -5,7 +5,23 @@ set -Eeuo pipefail
 repo_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 config_dir="${XDG_CONFIG_HOME:-$HOME/.config}"
 backup_dir="$HOME/.config-backup-debhypr-$(date +%Y%m%d-%H%M%S)"
-packages=(firefox ghostty fastfetch starship hyprpaper)
+packages=(
+  firefox
+  ghostty
+  fastfetch
+  starship
+  hyprpaper
+  waybar
+  bluez
+  brightnessctl
+  fzf
+  network-manager
+  libnotify-bin
+  playerctl
+  fonts-jetbrains-mono
+  fonts-noto-color-emoji
+  fontconfig
+)
 
 if [[ "$(id -u)" -eq 0 ]]; then
   echo "Run this script as your normal user, not as root." >&2
@@ -22,7 +38,7 @@ sudo apt-get update
 sudo apt-get install -y "${packages[@]}"
 
 mkdir -p "$config_dir"
-for app in hypr ghostty fastfetch; do
+for app in hypr ghostty fastfetch waybar; do
   target="$config_dir/$app"
   source="$repo_dir/config/$app"
   if [[ -e "$target" || -L "$target" ]]; then
@@ -40,6 +56,15 @@ if [[ -e "$starship_target" || -L "$starship_target" ]]; then
   echo "Backed up $starship_target"
 fi
 cp "$repo_dir/config/starship.toml" "$starship_target"
+
+font_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
+mkdir -p "$font_dir"
+
+if [[ -d "$repo_dir/assets/fonts/GoogleSansCode" ]]; then
+  cp -a "$repo_dir/assets/fonts/GoogleSansCode" "$font_dir/"
+  fc-cache -f "$font_dir"
+  echo "Installed Google Sans Code Nerd Font."
+fi
 
 wallpaper_dir="${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/DebHypr"
 mkdir -p "$wallpaper_dir"

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+main() {
+    local list=(
+        "Logout"
+        "Shutdown"
+    )
+
+    local opts=(
+        --border-label=" Power Menu "
+        --border="sharp"
+        --cycle
+        --highlight-line
+        --info="inline-right"
+        --reverse
+    )
+
+    local selected
+    selected=$(printf "%s\n" "${list[@]}" | fzf "${opts[@]}")
+
+    case "$selected" in
+        Logout)
+            loginctl terminate-session "$XDG_SESSION_ID"
+            ;;
+        Shutdown)
+            systemctl poweroff
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+
+main

@@ -1,0 +1,7 @@
+{
+	"custom/power": {
+		"format": "󰤄",
+		"on-click": "ghostty -e ~/.config/waybar/scripts/power",
+		"tooltip-format": "Power Menu"
+	}
+}
