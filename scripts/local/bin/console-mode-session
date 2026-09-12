@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+set -u
+
+unset WAYLAND_DISPLAY
+unset WAYLAND_SOCKET
+unset HYPRLAND_INSTANCE_SIGNATURE
+
+LOG="$HOME/.cache/console-mode.log"
+
+mkdir -p "$HOME/.cache"
+
+exec >> "$LOG" 2>&1
+
+echo "Starting Console Mode: $(date)"
+
+export XDG_CURRENT_DESKTOP=gamescope
+export XDG_SESSION_DESKTOP=gamescope
+export STEAMOS=1
+export WLR_NO_HARDWARE_CURSORS=1
+
+# Your main monitor resolution and refresh rate.
+WIDTH=2560
+HEIGHT=1440
+REFRESH=144
+
+if ! command -v gamescope >/dev/null 2>&1; then
+    echo "ERROR: gamescope is not installed."
+    exit 1
+fi
+
+if ! command -v steam >/dev/null 2>&1; then
+    echo "ERROR: steam is not installed."
+    exit 1
+fi
+
+# Kill any leftover Steam processes from a previous session.
+steam -shutdown >/dev/null 2>&1 || true
+sleep 2
+
+# Start Gamescope + Steam Gamepad UI.
+# Do NOT use "exec" here — we need the script to continue
+# after Gamescope exits so we can clean up Steam.
+gamescope \
+    -e \
+    -f \
+    -b \
+    --force-windows-fullscreen \
+    --force-grab-cursor \
+    --hide-cursor-delay 0 \
+    --adaptive-sync \
+    --immediate-flips \
+    -W "$WIDTH" \
+    -H "$HEIGHT" \
+    -w "$WIDTH" \
+    -h "$HEIGHT" \
+    -r "$REFRESH" \
+    -- steam \
+        -steamdeck \
+        -steamos3 \
+        -steampal \
+        -gamepadui
+
+echo "Gamescope exited: $(date)"
+
+# Make sure Steam is completely shut down.
+steam -shutdown >/dev/null 2>&1 || true
+sleep 2
+
+pkill -x steamwebhelper >/dev/null 2>&1 || true
+pkill -x steam >/dev/null 2>&1 || true
+
+echo "Steam cleanup complete: $(date)"
+echo "Switching to Hyprland: $(date)"
+
+# SteamOS "Switch to Desktop" equivalent.
+# Gamescope has exited, so start the normal desktop.
+exec Hyprland

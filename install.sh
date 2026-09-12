@@ -41,8 +41,26 @@ if [[ -e "$starship_target" || -L "$starship_target" ]]; then
 fi
 cp "$repo_dir/config/starship.toml" "$starship_target"
 
+local_bin="$HOME/.local/bin"
+mkdir -p "$local_bin"
+for script in start-console-after-hyprland desktop-to-console console-mode-session; do
+  cp "$repo_dir/scripts/local/bin/$script" "$local_bin/$script"
+  chmod 0755 "$local_bin/$script"
+done
+
+# This helper is referenced by the SUPER+TAB keybinding in hyprland.conf.
+# It requires sudoers configuration because Hyprland runs it with sudo -n.
+system_script="/usr/local/sbin/reboot-to-windows"
+if sudo test -e "$system_script"; then
+  sudo cp -p "$system_script" "$system_script.debhypr-backup-$(date +%Y%m%d-%H%M%S)"
+  echo "Backed up $system_script"
+fi
+sudo install -m 0755 "$repo_dir/scripts/sbin/reboot-to-windows" "$system_script"
+
 echo
 printf '%s\n' "DebHypr is installed. Existing configs, if any, are in: $backup_dir"
+printf '%s\n' "Installed console-mode scripts to: $local_bin"
+printf '%s\n' "The reboot-to-Windows helper was installed to: $system_script"
 printf '%s\n' "To enable Starship in Bash, add this to ~/.bashrc if it is not already there:"
 printf '%s\n' 'eval "$(starship init bash)"'
 printf '%s\n' "Start or reload Hyprland to use the new Hyprland config."
