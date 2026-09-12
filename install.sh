@@ -13,6 +13,7 @@ packages=(
   starship
   hyprpaper
   waybar
+  steam
   bluez
   brightnessctl
   fzf
@@ -37,6 +38,7 @@ fi
 echo "Installing applications and command-line tools..."
 sudo apt-get update
 sudo apt-get install -y "${packages[@]}"
+sudo apt-get install -y -t trixie-backports gamescope
 
 mkdir -p "$config_dir"
 for app in hypr ghostty fastfetch waybar; do
