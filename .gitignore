@@ -1,0 +1,8 @@
+# Local editor and system files
+.DS_Store
+*.swp
+*.swo
+
+# Never store local browser or application data
+firefox/
+cache/
