@@ -6,6 +6,7 @@ repo_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 config_dir="${XDG_CONFIG_HOME:-$HOME/.config}"
 backup_dir="$HOME/.config-backup-debhypr-$(date +%Y%m%d-%H%M%S)"
 packages=(
+  sudo
   firefox
   ghostty
   fastfetch
@@ -85,6 +86,16 @@ if sudo test -e "$system_script"; then
   echo "Backed up $system_script"
 fi
 sudo install -m 0755 "$repo_dir/scripts/sbin/reboot-to-windows" "$system_script"
+
+sudoers_file="/etc/sudoers.d/debhypr-reboot-to-windows"
+printf '%s\n' "$USER ALL=(root) NOPASSWD: $system_script" | sudo tee "$sudoers_file" >/dev/null
+sudo chmod 0440 "$sudoers_file"
+
+if ! sudo visudo -cf "$sudoers_file" >/dev/null; then
+  echo "ERROR: Generated sudoers file is invalid." >&2
+  sudo rm -f "$sudoers_file"
+  exit 1
+fi
 
 echo
 printf '%s\n' "DebHypr is installed. Existing configs, if any, are in: $backup_dir"
