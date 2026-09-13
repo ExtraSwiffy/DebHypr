@@ -12,7 +12,7 @@ packages=(
   fastfetch
   starship
   hyprpaper
-  waybar
+  quickshell
   steam
   bluez
   brightnessctl
@@ -41,7 +41,7 @@ sudo apt-get install -y "${packages[@]}"
 sudo apt-get install -y -t trixie-backports gamescope
 
 mkdir -p "$config_dir"
-for app in hypr ghostty fastfetch waybar; do
+for app in hypr ghostty fastfetch quickshell; do
   target="$config_dir/$app"
   source="$repo_dir/config/$app"
   if [[ -e "$target" || -L "$target" ]]; then
