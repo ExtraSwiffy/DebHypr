@@ -71,7 +71,14 @@ fi
 
 wallpaper_dir="${XDG_DATA_HOME:-$HOME/.local/share}/backgrounds/DebHypr"
 mkdir -p "$wallpaper_dir"
-cp "$repo_dir/assets/wallpapers/after-sunset-minimal-4k-zm-3840x2160.jpg" "$wallpaper_dir/"
+
+for wallpaper in \
+  after-sunset-minimal-4k-zm-3840x2160.jpg \
+  wp16242191.webp \
+  wp2998671.jpg
+do
+  cp "$repo_dir/assets/wallpapers/$wallpaper" "$wallpaper_dir/"
+done
 
 local_bin="$HOME/.local/bin"
 mkdir -p "$local_bin"
