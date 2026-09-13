@@ -1,4 +1,6 @@
-# DebHypr
+# DebHypr Beta 1.0.0
+
+Dev Note: Waybar is being replaced with quickshell its staying inside the guide until its complete.
 
 A personal Debian 13 (Trixie) Hyprland desktop restore setup.
 

@@ -7,7 +7,7 @@
         "height": 15,
         "width": 30,
         "padding": {
-            "top": 0,
+            "top": 6,
             "left": 0,
             "right": 4
         },
@@ -37,9 +37,16 @@
             "keyColor": "green"
         },
 
+
         {
             "type": "gpu",
             "key": "│ ├󰍹 ",
+            "keyColor": "green"
+        },
+
+        {
+            "type": "display",
+            "key": "│ ├󰹑 ",
             "keyColor": "green"
         },
 
@@ -70,6 +77,12 @@
         {
             "type": "os",
             "key": "  OS",
+            "keyColor": "yellow"
+        },
+
+        {
+            "type": "custom",
+            "format": "│ ├󰌽 : ExtraSwiffy DebHypr Beta [1.0.0]",
             "keyColor": "yellow"
         },
 
