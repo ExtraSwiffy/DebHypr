@@ -5,6 +5,7 @@ import Quickshell.Hyprland
 import Quickshell.Services.Mpris
 import Quickshell.Services.Pipewire
 import Quickshell.Io
+import Quickshell.Wayland
 
 ShellRoot {
     id: root
@@ -20,6 +21,106 @@ ShellRoot {
     property string weatherTemp: "--°F"
     property string weatherIcon: "󰖐"
     property bool updatesAvailable: false
+
+        property bool menuOpen: false
+    property bool confOpen: false
+
+    property real menuX: 0
+    property real menuY: 0
+
+    function closeMenus() {
+        menuOpen = false
+        confOpen = false
+    }
+
+    function openConfig(key) {
+        let path = ""
+
+        switch (key) {
+        case "quickshell":
+            path = "~/.config/quickshell/shell.qml"
+            break
+
+        case "hyprland":
+            path = "~/.config/hypr/hyprland.conf"
+            break
+
+        case "hyprpaper":
+            path = "~/.config/hypr/hyprpaper.conf"
+            break
+
+        case "ghostty":
+            path = "~/.config/ghostty/config"
+            break
+
+        case "starship":
+            path = "~/.config/starship.toml"
+            break
+        }
+
+        if (path === "")
+            return
+
+        configProcess.command = [
+            "bash",
+            "-lc",
+            "code --reuse-window " + path
+        ]
+
+        configProcess.running = true
+        closeMenus()
+    }
+
+    function runMenuAction(action) {
+        switch (action) {
+        case "terminal":
+            terminalProcess.command = ["ghostty"]
+            terminalProcess.running = true
+            break
+
+        case "files":
+            fileManagerProcess.command = ["dolphin"]
+            fileManagerProcess.running = true
+            break
+
+        case "quickshell":
+            quickshellReloadProcess.command = [
+                "bash",
+                "-lc",
+                "quickshell -r"
+            ]
+            quickshellReloadProcess.running = true
+            break
+
+        case "hyprland":
+            hyprlandReloadProcess.command = [
+                "hyprctl",
+                "reload"
+            ]
+            hyprlandReloadProcess.running = true
+            break
+
+        case "windows":
+            windowsProcess.command = [
+                "bash",
+                "-lc",
+                "systemctl reboot --boot-loader-entry=auto-windows"
+            ]
+            windowsProcess.running = true
+            break
+
+        case "logout":
+            logoutProcess.command = [
+                "hyprctl",
+                "dispatch",
+                "exit"
+            ]
+            logoutProcess.running = true
+            break
+        }
+
+        closeMenus()
+    }
 
     function activeSpotifyPlayer() {
         for (let i = 0; i < Mpris.players.values.length; i++) {
@@ -157,6 +258,290 @@ ShellRoot {
             }
         }
     }
+
+        Process { id: terminalProcess }
+
+    Process { id: fileManagerProcess }
+
+    Process { id: configProcess }
+
+    Process { id: quickshellReloadProcess }
+
+    Process { id: hyprlandReloadProcess }
+
+    Process { id: windowsProcess }
+
+    Process { id: logoutProcess }
+
+    
+    Variants {
+    model: Quickshell.screens
+
+    PanelWindow {
+        id: desktopLayer
+
+        required property var modelData
+
+        screen: modelData
+
+        anchors {
+            top: true
+            left: true
+            right: true
+            bottom: true
+        }
+
+        color: "transparent"
+
+        WlrLayershell.layer: WlrLayer.Bottom
+        WlrLayershell.exclusiveZone: -1
+
+        MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+    onClicked: function(mouse) {
+        if (mouse.button === Qt.RightButton) {
+            root.menuX = mouse.x
+            root.menuY = mouse.y
+            root.menuOpen = true
+            root.confOpen = false
+        } else if (mouse.button === Qt.LeftButton) {
+            root.closeMenus()
+        }
+    }
+}
+
+        Rectangle {
+            id: contextMenu
+
+            visible: root.menuOpen
+
+            z: 100
+
+            x: Math.min(
+                root.menuX,
+                parent.width - width - 10
+            )
+
+            y: Math.min(
+                root.menuY,
+                parent.height - height - 10
+            )
+
+            width: 220
+            height: root.confOpen ? 292 : 258
+
+            radius: 12
+
+            color: root.bg
+
+            border.color: root.bgLight
+            border.width: 1
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 6
+
+                spacing: 2
+
+                Repeater {
+                    model: [
+                        {
+                            label: "Open Terminal",
+                            action: "terminal"
+                        },
+                        {
+                            label: "Open File Manager",
+                            action: "files"
+                        },
+                        {
+                            label: "Reload Quickshell",
+                            action: "quickshell"
+                        },
+                        {
+                            label: "Reload Hyprland",
+                            action: "hyprland"
+                        },
+                        {
+                            label: "DebHypr Conf",
+                            action: "conf"
+                        },
+                        {
+                            label: "Reboot to Windows",
+                            action: "windows"
+                        },
+                        {
+                            label: "Log Out",
+                            action: "logout"
+                        }
+                    ]
+
+                    delegate: Rectangle {
+                        required property var modelData
+
+                        width: parent.width
+                        height: 34
+
+                        radius: 7
+
+                        color:
+                            menuMouse.containsMouse
+                            ? root.bgDark
+                            : "transparent"
+
+                        Text {
+                            anchors {
+                                left: parent.left
+                                leftMargin: 10
+                                verticalCenter: parent.verticalCenter
+                            }
+
+                            text: modelData.label
+
+                            color: root.text
+
+                            font.pixelSize: 13
+                        }
+
+                        Text {
+                            visible:
+                                modelData.action === "conf"
+
+                            anchors {
+                                right: parent.right
+                                rightMargin: 10
+                                verticalCenter: parent.verticalCenter
+                            }
+
+                            text: "›"
+
+                            color: root.muted
+
+                            font.pixelSize: 18
+                        }
+
+                        MouseArea {
+                            id: menuMouse
+
+                            anchors.fill: parent
+
+                            hoverEnabled: true
+
+                            onClicked: {
+                                if (modelData.action === "conf") {
+                                    root.confOpen =
+                                        !root.confOpen
+                                } else {
+                                    root.runMenuAction(
+                                        modelData.action
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: confMenu
+
+                visible: root.confOpen
+
+                z: 101
+
+                x: contextMenu.width - 2
+                y: 6
+
+                width: 230
+                height: 184
+
+                radius: 12
+
+                color: root.bg
+
+                border.color: root.bgLight
+                border.width: 1
+
+                Column {
+                    anchors.fill: parent
+                    anchors.margins: 6
+
+                    spacing: 2
+
+                    Repeater {
+                        model: [
+                            {
+                                label: "Quickshell",
+                                key: "quickshell"
+                            },
+                            {
+                                label: "Hyprland",
+                                key: "hyprland"
+                            },
+                            {
+                                label: "Hyprpaper",
+                                key: "hyprpaper"
+                            },
+                            {
+                                label: "Ghostty",
+                                key: "ghostty"
+                            },
+                            {
+                                label: "Starship",
+                                key: "starship"
+                            }
+                        ]
+
+                        delegate: Rectangle {
+                            required property var modelData
+
+                            width: parent.width
+                            height: 34
+
+                            radius: 7
+
+                            color:
+                                configMouse.containsMouse
+                                ? root.bgDark
+                                : "transparent"
+
+                            Text {
+                                anchors {
+                                    left: parent.left
+                                    leftMargin: 10
+                                    verticalCenter: parent.verticalCenter
+                                }
+
+                                text: "Open " + modelData.label + " Config"
+
+                                color: root.text
+
+                                font.pixelSize: 13
+                            }
+
+                            MouseArea {
+                                id: configMouse
+
+                                anchors.fill: parent
+
+                                hoverEnabled: true
+
+                                onClicked: {
+                                    root.openConfig(
+                                        modelData.key
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 
     Timer {
         interval: 600000
@@ -466,8 +851,8 @@ ShellRoot {
 
                                 text:
                                     mediaCapsule.spotifyPlaying
-                                    ? ""
-                                    : ""
+                                    ? ""
+                                    : ""
 
                                 color: root.text
                                 font.pixelSize: 17
