@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+echo "==> Configuring DebHypr Live..."
+
+apt-get update
+
+apt-get install -y \
+    sddm \
+    network-manager \
+    dbus \
+    fontconfig
+
+systemctl enable NetworkManager
+systemctl enable sddm
+
+fc-cache -f
+
+mkdir -p /etc/skel/.config
+mkdir -p /etc/skel/.local/share
+
+echo "==> DebHypr Live configuration complete."

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+/usr/sbin/grub-reboot 'osprober-efi-24E5-3B1F'
+/usr/bin/systemctl reboot

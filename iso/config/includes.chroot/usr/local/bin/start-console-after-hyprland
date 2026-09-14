@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+while pgrep -x Hyprland >/dev/null 2>&1; do
+    sleep 0.2
+done
+
+sleep 1
+
+unset WAYLAND_DISPLAY
+unset WAYLAND_SOCKET
+unset HYPRLAND_INSTANCE_SIGNATURE
+
+exec "$HOME/.local/bin/console-mode-session"

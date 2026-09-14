@@ -1,8 +1,34 @@
-# Local editor and system files
-.DS_Store
-*.swp
-*.swo
+# DebHypr live-build generated files
+iso/binary/
+iso/chroot/
+iso/cache/
+iso/local/
+iso/auto/
 
-# Never store local browser or application data
-firefox/
-cache/
+iso/live-image-amd64.hybrid.iso
+iso/live-image-amd64.contents
+iso/live-image-amd64.files
+iso/live-image-amd64.packages
+iso/live-image-amd64.packages.install
+iso/live-image-amd64.packages.live
+iso/chroot.files
+iso/chroot.packages.install
+iso/chroot.packages.live
+iso/binary.modified_timestamps
+
+# Build artifacts
+*.iso
+*.img
+*.img.gz
+*.img.bz2
+
+# Temporary files
+*.log
+
+# live-build internal state
+iso/.build/
+
+# live-build generated hooks
+iso/config/hooks/normal/
+iso/config/hooks/live/0010-disable-kexec-tools.hook.chroot
+iso/config/hooks/live/0050-disable-sysvinit-tmpfs.hook.chroot

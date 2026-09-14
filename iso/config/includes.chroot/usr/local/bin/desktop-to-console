@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+systemd-run --user --quiet --collect \
+    --unit=console-mode-transition \
+    "$HOME/.local/bin/start-console-after-hyprland" >/dev/null 2>&1 &
+
+sleep 0.5
+
+hyprctl dispatch exit
