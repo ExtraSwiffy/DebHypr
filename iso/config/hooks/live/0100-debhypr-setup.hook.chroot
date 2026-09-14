@@ -3,19 +3,36 @@ set -e
 
 echo "==> Configuring DebHypr Live..."
 
+# Enable 32-bit packages for Steam and gaming
+dpkg --add-architecture i386
+
+# Update package indexes after enabling i386
 apt-get update
 
+# Core desktop/system services
 apt-get install -y \
     sddm \
     network-manager \
     dbus \
-    fontconfig
+    fontconfig \
+    systemd-timesyncd
 
+# Steam installer + 32-bit gaming dependencies
+apt-get install -y \
+    steam-installer \
+    mesa-vulkan-drivers:i386 \
+    libgl1-mesa-dri:i386 \
+    libglx-mesa0:i386
+
+# Enable required services
 systemctl enable NetworkManager
 systemctl enable sddm
+systemctl enable systemd-timesyncd
 
+# Refresh font cache
 fc-cache -f
 
+# Create standard user directories
 mkdir -p /etc/skel/.config
 mkdir -p /etc/skel/.local/share
 
