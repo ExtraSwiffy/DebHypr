@@ -49,8 +49,8 @@ ShellRoot {
             path = "~/.config/hypr/hyprpaper.conf"
             break
 
-        case "kitty":
-            path = "~/.config/kitty/config"
+        case "ghostty":
+            path = "~/.config/ghostty/config"
             break
 
         case "starship":
@@ -74,7 +74,7 @@ ShellRoot {
     function runMenuAction(action) {
         switch (action) {
         case "terminal":
-            terminalProcess.command = ["kitty"]
+            terminalProcess.command = ["ghostty"]
             terminalProcess.running = true
             break
 
@@ -245,7 +245,7 @@ ShellRoot {
         id: upgradeProcess
 
         command: [
-            "kitty",
+            "ghostty",
             "-e",
             "bash",
             "-c",
@@ -484,8 +484,8 @@ ShellRoot {
                                 key: "hyprpaper"
                             },
                             {
-                                label: "Kitty",
-                                key: "kitty"
+                                label: "Ghostty",
+                                key: "ghostty"
                             },
                             {
                                 label: "Starship",
