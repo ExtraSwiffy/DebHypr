@@ -3,38 +3,38 @@
 set -e
 
 PROJECT_DIR="$HOME/DebHypr"
+LIVE="$HOME/.config"
 MAIN="$PROJECT_DIR/config"
-ISO="$PROJECT_DIR/iso/config/includes.chroot/etc/skel/.config"
 
-echo "==> Syncing DebHypr configs to ISO build tree..."
+echo "==> Syncing live desktop configs to DebHypr main..."
 echo
 
 # Hyprland
-mkdir -p "$ISO/hypr"
-cp "$MAIN/hypr/hyprland.conf" "$ISO/hypr/hyprland.conf"
-cp "$MAIN/hypr/hyprpaper.conf" "$ISO/hypr/hyprpaper.conf"
+mkdir -p "$MAIN/hypr"
+cp "$LIVE/hypr/hyprland.conf" "$MAIN/hypr/hyprland.conf"
+cp "$LIVE/hypr/hyprpaper.conf" "$MAIN/hypr/hyprpaper.conf"
 echo "✓ Hyprland"
 
 # Quickshell
-mkdir -p "$ISO/quickshell"
-cp "$MAIN/quickshell/shell.qml" "$ISO/quickshell/shell.qml"
+mkdir -p "$MAIN/quickshell"
+cp "$LIVE/quickshell/shell.qml" "$MAIN/quickshell/shell.qml"
 echo "✓ Quickshell"
 
 # Ghostty
-mkdir -p "$ISO/ghostty"
-cp "$MAIN/ghostty/config.ghostty" "$ISO/ghostty/config.ghostty"
+mkdir -p "$MAIN/ghostty"
+cp "$LIVE/ghostty/config.ghostty" "$MAIN/ghostty/config.ghostty"
 echo "✓ Ghostty"
 
 # Fastfetch
-mkdir -p "$ISO/fastfetch"
-cp "$MAIN/fastfetch/config.jsonc" "$ISO/fastfetch/config.jsonc"
+mkdir -p "$MAIN/fastfetch"
+cp "$LIVE/fastfetch/config.jsonc" "$MAIN/fastfetch/config.jsonc"
 echo "✓ Fastfetch"
 
 # Starship
-cp "$MAIN/starship.toml" "$ISO/starship.toml"
+cp "$LIVE/starship.toml" "$MAIN/starship.toml"
 echo "✓ Starship"
 
 echo
-echo "==> ISO config sync complete."
+echo "==> Live → main sync complete."
 echo
 echo "Run 'git status' to review the changes."
