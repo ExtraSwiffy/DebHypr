@@ -3,38 +3,58 @@
 set -e
 
 PROJECT_DIR="$HOME/DebHypr"
-MAIN="$PROJECT_DIR/config"
 ISO="$PROJECT_DIR/iso/config/includes.chroot/etc/skel/.config"
+MAIN_BRANCH="main"
 
 echo "==> Syncing DebHypr main configs to ISO build tree..."
+echo "    Source: Git branch '$MAIN_BRANCH'"
 echo
 
+# Make sure we're inside the DebHypr repository
+cd "$PROJECT_DIR"
+
+# Make sure main exists locally
+git rev-parse --verify "$MAIN_BRANCH" >/dev/null 2>&1 || {
+    echo "ERROR: Git branch '$MAIN_BRANCH' was not found."
+    exit 1
+}
+
+sync_file() {
+    local source="$1"
+    local destination="$2"
+
+    mkdir -p "$(dirname "$destination")"
+    git show "$MAIN_BRANCH:$source" > "$destination"
+
+    echo "✓ $source"
+}
+
 # Hyprland
-mkdir -p "$ISO/hypr"
-cp "$MAIN/hypr/hyprland.conf" "$ISO/hypr/hyprland.conf"
-cp "$MAIN/hypr/hyprpaper.conf" "$ISO/hypr/hyprpaper.conf"
-echo "✓ Hyprland"
+sync_file "config/hypr/hyprland.conf" \
+    "$ISO/hypr/hyprland.conf"
+
+sync_file "config/hypr/hyprpaper.conf" \
+    "$ISO/hypr/hyprpaper.conf"
 
 # Quickshell
-mkdir -p "$ISO/quickshell"
-cp "$MAIN/quickshell/shell.qml" "$ISO/quickshell/shell.qml"
-echo "✓ Quickshell"
+sync_file "config/quickshell/shell.qml" \
+    "$ISO/quickshell/shell.qml"
 
 # Ghostty
-mkdir -p "$ISO/ghostty"
-cp "$MAIN/ghostty/config.ghostty" "$ISO/ghostty/config.ghostty"
-echo "✓ Ghostty"
+sync_file "config/ghostty/config.ghostty" \
+    "$ISO/ghostty/config.ghostty"
 
 # Fastfetch
-mkdir -p "$ISO/fastfetch"
-cp "$MAIN/fastfetch/config.jsonc" "$ISO/fastfetch/config.jsonc"
-echo "✓ Fastfetch"
+sync_file "config/fastfetch/config.jsonc" \
+    "$ISO/fastfetch/config.jsonc"
 
 # Starship
-cp "$MAIN/starship.toml" "$ISO/starship.toml"
-echo "✓ Starship"
+sync_file "config/starship.toml" \
+    "$ISO/starship.toml"
 
 echo
 echo "==> Main → ISO sync complete."
+echo
+echo "The ISO tree now contains the committed configs from '$MAIN_BRANCH'."
 echo
 echo "Run 'git status' to review the ISO changes."
