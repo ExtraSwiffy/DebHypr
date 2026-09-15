@@ -22,8 +22,78 @@ ShellRoot {
     property string weatherIcon: "󰖐"
     property bool updatesAvailable: false
 
-        property bool menuOpen: false
+    property string wallpaperDir: "/home/extraswiffy/Pictures/Wallpapers"
+    property var wallpapers: []
+    property int wallpaperIndex: 0
+    property bool wallpaperPickerOpen: false
+    property bool wallpaperChanging: false
+    property string wallpaperCurrent: ""
+    property string wallpaperPrevious: ""
+
+    property bool menuOpen: false
     property bool confOpen: false
+
+    function toggleWallpaperPicker() {
+    wallpaperPickerOpen = !wallpaperPickerOpen
+}
+
+IpcHandler {
+    target: "wallpaper"
+
+    function toggle() {
+        root.toggleWallpaperPicker()
+    }
+
+    function close() {
+        root.closeWallpaperPicker()
+    }
+}
+
+IpcHandler {
+    target: "quickshell"
+
+    function reload() {
+        Quickshell.reload(false)
+    }
+}
+
+function closeWallpaperPicker() {
+    wallpaperPickerOpen = false
+}
+
+function loadWallpapers() {
+    wallpaperListProcess.running = true
+}
+
+function applyWallpaper(path) {
+    if (path === "")
+        return
+
+    wallpaperPrevious = wallpaperCurrent
+    wallpaperCurrent = path
+    wallpaperChanging = true
+
+    wallpaperApplyProcess.command = [
+        "hyprctl",
+        "hyprpaper",
+        "wallpaper",
+        "HDMI-A-1," + path
+    ]
+
+    wallpaperApplyProcess.running = true
+}
+
+    
+
+
+
+
+
+
+
+
+
+
 
     property real menuX: 0
     property real menuY: 0
@@ -50,11 +120,15 @@ ShellRoot {
             break
 
         case "ghostty":
-            path = "~/.config/ghostty/config"
+            path = "~/.config/ghostty/config.ghostty"
             break
 
         case "starship":
             path = "~/.config/starship.toml"
+            break
+
+        case "fastfetch":
+            path = "~/.config/fastfetch/config.jsonc"
             break
         }
 
@@ -62,10 +136,12 @@ ShellRoot {
             return
 
         configProcess.command = [
-            "bash",
-            "-lc",
-            "code --reuse-window " + path
-        ]
+    "ghostty",
+    "-e",
+    "bash",
+    "-lc",
+    "nano " + path
+]
 
         configProcess.running = true
         closeMenus()
@@ -84,13 +160,15 @@ ShellRoot {
             break
 
         case "quickshell":
-            quickshellReloadProcess.command = [
-                "bash",
-                "-lc",
-                "quickshell -r"
-            ]
-            quickshellReloadProcess.running = true
-            break
+    quickshellReloadProcess.command = [
+        "quickshell",
+        "ipc",
+        "call",
+        "quickshell",
+        "reload"
+    ]
+    quickshellReloadProcess.running = true
+    break
 
         case "hyprland":
             hyprlandReloadProcess.command = [
@@ -273,6 +351,49 @@ ShellRoot {
 
     Process { id: logoutProcess }
 
+    Process {
+    id: wallpaperListProcess
+
+    command: [
+        "bash",
+        "-lc",
+        "find \"" + root.wallpaperDir + "\" -maxdepth 1 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) -printf '%f\\n' | sort"
+    ]
+
+    stdout: StdioCollector {
+        id: wallpaperListOutput
+
+        onStreamFinished: {
+            const lines = text
+                .trim()
+                .split("\n")
+                .filter(line => line.length > 0)
+
+            const result = []
+
+            for (let i = 0; i < lines.length; i++) {
+                result.push(
+                    root.wallpaperDir + "/" + lines[i]
+                )
+            }
+
+            root.wallpapers = result
+
+            if (root.wallpaperIndex >= result.length)
+                root.wallpaperIndex = Math.max(0, result.length - 1)
+        }
+    }
+}
+
+Process {
+    id: wallpaperApplyProcess
+
+    onRunningChanged: {
+        if (!running)
+            root.wallpaperChanging = false
+    }
+}
+
     
     Variants {
     model: Quickshell.screens
@@ -454,7 +575,7 @@ ShellRoot {
                 y: 6
 
                 width: 230
-                height: 184
+                height: 228
 
                 radius: 12
 
@@ -490,6 +611,10 @@ ShellRoot {
                             {
                                 label: "Starship",
                                 key: "starship"
+                            },
+                            {
+                                label: "Fastfetch",
+                                key: "fastfetch"
                             }
                         ]
 
@@ -541,7 +666,193 @@ ShellRoot {
     }
 }
 
+    Variants {
+        model: Quickshell.screens
 
+        PanelWindow {
+    id: wallpaperPicker
+
+    required property var modelData
+
+    screen: modelData
+
+    visible: root.wallpaperPickerOpen
+
+    focusable: true
+
+    anchors {
+        top: true
+        left: true
+        right: true
+        bottom: true
+    }
+
+    color: "transparent"
+
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+
+    
+
+    Item {
+    id: wallpaperKeyboardFocus
+
+    width: 1
+    height: 1
+
+    anchors {
+        left: parent.left
+        top: parent.top
+    }
+
+    TextInput {
+        id: wallpaperKeyboardInput
+
+        width: 1
+        height: 1
+
+        focus: root.wallpaperPickerOpen
+
+        onTextChanged: {
+            text = ""
+        }
+
+        Keys.onLeftPressed: {
+            if (root.wallpapers.length === 0)
+                return
+
+            root.wallpaperIndex =
+                (root.wallpaperIndex - 1 + root.wallpapers.length)
+                % root.wallpapers.length
+        }
+
+        Keys.onRightPressed: {
+            if (root.wallpapers.length === 0)
+                return
+
+            root.wallpaperIndex =
+                (root.wallpaperIndex + 1)
+                % root.wallpapers.length
+        }
+
+        Keys.onReturnPressed: {
+            if (root.wallpapers.length === 0)
+                return
+
+            root.applyWallpaper(
+                root.wallpapers[root.wallpaperIndex]
+            )
+        }
+
+        Keys.onEscapePressed: {
+            root.closeWallpaperPicker()
+        }
+    }
+}
+
+            Rectangle {
+                anchors.fill: parent
+                color: "#000000"
+                opacity: 0.35
+            }
+
+            Rectangle {
+    id: wallpaperPickerCard
+
+    width: 900
+    height: 360
+
+    anchors.centerIn: parent
+
+    color: root.bg
+    radius: 18
+
+    border.width: 1
+    border.color: root.bgLight
+
+    Row {
+        anchors.centerIn: parent
+        spacing: 18
+
+        Repeater {
+            model: root.wallpapers
+
+            delegate: Rectangle {
+                required property string modelData
+                required property int index
+
+                width: index === root.wallpaperIndex ? 520 : 150
+                height: index === root.wallpaperIndex ? 292 : 220
+
+                radius: 14
+
+                color: root.bgDark
+
+                border.width: index === root.wallpaperIndex ? 2 : 1
+                border.color:
+                    index === root.wallpaperIndex
+                    ? root.blue
+                    : root.bgLight
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 250
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Behavior on height {
+                    NumberAnimation {
+                        duration: 250
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                Image {
+                    anchors.fill: parent
+
+                    source: "file://" + modelData
+
+                    fillMode: Image.PreserveAspectCrop
+
+                    asynchronous: true
+
+                    smooth: true
+
+                    clip: true
+
+                    opacity:
+                        index === root.wallpaperIndex
+                        ? 1
+                        : 0.55
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+
+                    onClicked: {
+                        root.wallpaperIndex = index
+                    }
+                }
+            }
+        }
+    }
+
+    Text {
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            bottom: parent.bottom
+            bottomMargin: 16
+        }
+
+        text: "← / →   Select     Enter   Apply     Super+W   Close"
+
+        color: root.muted
+        font.pixelSize: 12
+                }
+            }
+        }
+    }
 
     Timer {
         interval: 600000
@@ -555,9 +866,10 @@ ShellRoot {
     }
 
     Component.onCompleted: {
-        weatherProcess.running = true
-        updateProcess.running = true
-    }
+    weatherProcess.running = true
+    updateProcess.running = true
+    wallpaperListProcess.running = true
+}
 
     Variants {
         model: Quickshell.screens
